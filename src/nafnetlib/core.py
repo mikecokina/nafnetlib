@@ -16,6 +16,8 @@ class AbstractNAFNetProcessor(metaclass=abc.ABCMeta):
     MODELS = []
 
     def __init__(self, model_id: str, model_dir: str, device: str):
+        self.validate_model(model_id)
+
         self.device = device
         self.model_id = model_id
         self.model_dir = model_dir
@@ -48,6 +50,9 @@ class AbstractNAFNetProcessor(metaclass=abc.ABCMeta):
         if model_id not in cls.MODELS:
             raise ValueError(f"Invalid model id {model_id}, supported models are {cls.MODELS}")
         return True
+
+    def available_models(self):
+        return self.MODELS
 
 
 class DeblurProcessor(AbstractNAFNetProcessor):
