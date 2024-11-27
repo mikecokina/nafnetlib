@@ -13,6 +13,8 @@ from .utils import download_model
 
 
 class AbstractNAFNetProcessor(metaclass=abc.ABCMeta):
+    MODELS = []
+
     def __init__(self, model_id: str, model_dir: str, device: str):
         self.device = device
         self.model_id = model_id
@@ -28,7 +30,7 @@ class AbstractNAFNetProcessor(metaclass=abc.ABCMeta):
         if not os.path.isfile(str(model_path)):
             download_model(model_path=model_path, model_url=model_url)
 
-    def process(self, image: Image.Image):
+    def process(self, image: Image.Image) -> Image.Image:
         return self.net.predict(image)
 
     @staticmethod
@@ -41,15 +43,28 @@ class AbstractNAFNetProcessor(metaclass=abc.ABCMeta):
             opt["num_gpu"] = 1
         return opt
 
+    @classmethod
+    def validate_model(cls, model_id) -> bool:
+        if model_id not in cls.MODELS:
+            raise ValueError(f"Invalid model id {model_id}, supported models are {cls.MODELS}")
+        return True
+
 
 class DeblurProcessor(AbstractNAFNetProcessor):
+    MODELS = ["gopro_width64", "gopro_width32", "reds_width64"]
+
     def __init__(self, model_id: str, model_dir: str, device: Union[str, torch.device]):
         super().__init__(model_id, model_dir, device)
-        opt = self.model_config['gopro_width64']
+        opt = self.model_config[model_id]
         opt = self._update_opt_by_device(opt=opt, device=device)
         self.net = ImageRestorationModel(opt)
 
 
 class DenoiseProcessor(AbstractNAFNetProcessor):
+    MODELS = ["sidd_width64", "sidd_width32"]
+
     def __init__(self, model_id: str, model_dir: str, device: str):
         super().__init__(model_id, model_dir, device)
+        opt = self.model_config[model_id]
+        opt = self._update_opt_by_device(opt=opt, device=device)
+        self.net = ImageRestorationModel(opt)
