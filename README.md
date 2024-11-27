@@ -6,7 +6,7 @@
 
 
 # NAFNet Image Restoration
-This repository contains implementations of the NAFNet (Non-Local Attention Network) for image restoration tasks such as deblurring and denoising. The core of the project includes a modular framework for easy processing of images using pre-trained models.
+This repository contains implementations of the NAFNet (Nonlinear Activation Free Network) for image restoration tasks such as deblurring and denoising. The core of the project includes a modular framework for easy processing of images using pre-trained models.
 
 
 ## Features
