@@ -36,7 +36,11 @@ class AbstractNAFNetProcessor(metaclass=abc.ABCMeta):
             utils.download_model(model_path=model_path, model_url=model_url)
 
     def process(self, image: Image.Image) -> Image.Image:
-        return self.net.predict(image)
+        processed = self.net.predict(image)
+        # Garbage collection
+        utils.torch_gc(self.device)
+
+        return processed
 
     single = process
 
@@ -64,8 +68,8 @@ class AbstractNAFNetProcessor(metaclass=abc.ABCMeta):
             output_path = output_dir / f"{file_path.stem}_processed.png"
 
             image = Image.open(str(file_)).convert('RGB')
-            deblured = self.single(image=image)
-            deblured.save(output_path)
+            processed = self.single(image=image)
+            processed.save(output_path)
 
     @staticmethod
     def _update_opt_by_device(opt: Dict, device: Union[str, torch.device]) -> Dict:
