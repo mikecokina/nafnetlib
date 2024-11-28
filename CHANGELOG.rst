@@ -20,3 +20,15 @@ v0.1.0
 * **Not Supported**
     - Not supported models: `Baseline-GoPro-*`, `Baseline-SIDD-*` and `NAFSSR-L_*`
 
+
+
+v0.2.0.dev0
+-----------
+.. v0.2.0.dev0: https://github.com/mikecokina/nafnetlib/dev
+
+**Release date:** XXXX-XX-XX
+
+**Features**
+
+- Batch processor
+- CUDA garbage collection
