@@ -1,15 +1,18 @@
 import abc
 import os.path
 from copy import deepcopy
+from pathlib import Path
 from typing import Union, Dict
 
 import torch
 
 from PIL import Image
 
+from . import utils
 from .conf import ModelsConfiguration
 from .models.restoration import ImageRestorationModel
-from .utils import download_model
+
+SUPPORTED_FORMATS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.tiff', '.bmp']
 
 
 class AbstractNAFNetProcessor(metaclass=abc.ABCMeta):
@@ -30,10 +33,39 @@ class AbstractNAFNetProcessor(metaclass=abc.ABCMeta):
         config_ = self.model_config[model_id]
         model_path, model_url = config_["path"]["pretrain_network_g"], config_["model_url"]
         if not os.path.isfile(str(model_path)):
-            download_model(model_path=model_path, model_url=model_url)
+            utils.download_model(model_path=model_path, model_url=model_url)
 
     def process(self, image: Image.Image) -> Image.Image:
         return self.net.predict(image)
+
+    single = process
+
+    def batch(self, input_dir: Union[str, Path], output_dir: Union[str, Path], progressbar=True) -> None:
+        try:
+            if progressbar:
+                from tqdm import tqdm
+            else:
+                raise ImportError()
+        except ImportError:
+            # noinspection PyUnusedLocal
+            def _tqdm(x, *args, **kwargs):
+                return x
+
+            tqdm = _tqdm
+
+        files = utils.listdir(directory=input_dir, filter_ext=SUPPORTED_FORMATS)
+        output_dir = Path(output_dir)
+
+        if not os.path.isdir(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
+
+        for file_ in tqdm(files):
+            file_path = Path(file_)
+            output_path = output_dir / f"{file_path.stem}_processed.png"
+
+            image = Image.open(str(file_)).convert('RGB')
+            deblured = self.single(image=image)
+            deblured.save(output_path)
 
     @staticmethod
     def _update_opt_by_device(opt: Dict, device: Union[str, torch.device]) -> Dict:

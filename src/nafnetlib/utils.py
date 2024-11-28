@@ -1,4 +1,7 @@
 import os
+import re
+from pathlib import Path
+from typing import List, Union
 
 import cv2
 import numpy as np
@@ -114,3 +117,35 @@ def download_model(model_path: str, model_url: str) -> None:
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
         logger.info(f'Downloading model to: {model_path}')
         torch.hub.download_url_to_file(model_url, model_path, progress=True)
+
+
+def listdir(directory: str, filter_ext: List = None) -> List[str]:
+    if filter_ext is not None:
+        filter_ext = set(filter_ext)
+
+    file_list = []
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            to_append = None
+            if filter_ext is None:
+                to_append = os.path.join(root, file)
+            else:
+                if Path(file).suffix in filter_ext:
+                    to_append = os.path.join(root, file)
+            if to_append is not None:
+                file_list.append(to_append)
+
+    try:
+        file_list = sorted(file_list, key=lambda x: int(re.search(r'(\d+)', Path(x).stem).group()))
+    except AttributeError:
+        # Skip number like ordering if not possible
+        pass
+
+    return file_list
+
+
+def torch_gc(device: Union[str, torch.device]):
+    if torch.cuda.is_available():
+        with torch.cuda.device(device):
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
