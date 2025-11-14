@@ -32,3 +32,4 @@ v0.2.0.dev0
 
 - Batch processor
 - CUDA garbage collection
+- Tile processing support

@@ -3,11 +3,8 @@
 [![Python version](https://img.shields.io/badge/python-3.10|3.11-orange.svg)](https://www.python.org/doc/versions/)
 [![OS](https://img.shields.io/badge/os-Linux|Windows|macOS-magenta.svg)](https://www.gnu.org/gnu/linux-and-gnu.html)
 
-
-
 # NAFNet Image Restoration
 This repository contains implementations of the NAFNet (Nonlinear Activation Free Network) for image restoration tasks such as deblurring and denoising. The core of the project includes a modular framework for easy processing of images using pre-trained models.
-
 
 ## Features
 - **Image Restoration:** The core functionality includes deblurring and denoising using state-of-the-art models.
@@ -15,9 +12,13 @@ This repository contains implementations of the NAFNet (Nonlinear Activation Fre
 - **Model Management:** Automatically downloads and manages model files for easy usage.
 
 ## Installation
-Via PyPI
-You can easily install the nafnetlib package from PyPI:
+Via PyPI  
+You can easily install the nafnetlib package from PyPI:  
 `pip install nafnetlib`
+
+To install the version with the latest features, use:
+
+`pip install git+https://github.com/mikecokina/nafnetlib.git@dev`
 
 ### Requirements
 - Python 3.x
@@ -25,7 +26,7 @@ You can easily install the nafnetlib package from PyPI:
 - PIL (Pillow)
 - Other dependencies listed in requirements.txt
 
-You can install the dependencies using pip:
+Install dependencies:
 
 `pip install -r requirements.txt`
 
@@ -65,6 +66,44 @@ image = Image.open(img_path)
 # Process the image (e.g., deblur or denoise)
 db_processor.process(image).show()
 ```
+
+## Tiled Inference - Low VRAM Mode
+Large images may require more GPU memory than available.  
+The `process()` method supports tiled inference.
+
+Parameters:
+- `tile_size` - size of each tile in pixels
+- `tile_overlap` - overlap amount for seamless blending
+
+Example:
+
+```python
+from PIL import Image
+from nafnetlib import DeblurProcessor
+
+processor = DeblurProcessor(
+    model_id="gopro_width64",
+    model_dir="/absolute/path/to/model/dir",
+    device="cuda"
+)
+
+image = Image.open("huge_image.png")
+
+result = processor.process(
+    image,
+    tile_size=512,
+    tile_overlap=64
+)
+
+result.save("output.png")
+```
+
+Use tiling when:
+- You get CUDA out-of-memory errors
+- You want to process very large images
+- You want predictable VRAM usage
+
+If `tile_size` is not provided, full image inference is used.
 
 ## Supported Models
 The following models are available for different image restoration tasks:
